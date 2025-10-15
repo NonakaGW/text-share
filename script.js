@@ -28,44 +28,43 @@ if (document.getElementById("saveBtn")) {
       status.textContent = "内容の読み込みに失敗しました。";
     });
 
-  // 保存ボタン処理
-  document.getElementById("saveBtn").addEventListener("click", async () => {
-    const token = tokenInput.value.trim();
-    if (!token) {
-      status.textContent = "トークンを入力してください。";
-      return;
-    }
+document.getElementById("saveBtn").addEventListener("click", async () => {
+  const token = tokenInput.value.trim();
+  if (!token) {
+    status.textContent = "トークンを入力してください。";
+    return;
+  }
 
-    // 現在のSHAを取得
-    const getRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`);
-    const fileData = await getRes.json();
+  // 最新SHAを再取得（409対策）
+  const getRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}?timestamp=${Date.now()}`);
+  const fileData = await getRes.json();
 
-    // 新しい内容をBase64にエンコード
-    const updatedContent = editor.value;
-    const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)));
+  const updatedContent = editor.value;
+  const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)));
 
-    // PUTで更新
-    const updateRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
-      method: "PUT",
-      headers: {
-        "Authorization": `token ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: "update via web",
-        content: encodedContent,
-        sha: fileData.sha
-      })
-    });
-
-    if (updateRes.ok) {
-      status.textContent = "✅ GitHubに保存しました！";
-    } else {
-      const errText = await updateRes.text();
-      console.error("更新失敗:", errText);
-      status.textContent = "⚠️ エラーが発生しました。";
-    }
+  const updateRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
+    method: "PUT",
+    headers: {
+      "Authorization": `token ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: "update via web",
+      content: encodedContent,
+      sha: fileData.sha // ← 常に最新を使用！
+    })
   });
+
+  const result = await updateRes.json();
+
+  if (updateRes.ok) {
+    status.textContent = "✅ GitHubに保存しました！";
+  } else {
+    console.error(result);
+    status.textContent = `❌ 更新失敗: ${result.message}`;
+  }
+});
+
 }
 
 // =========================
@@ -99,3 +98,4 @@ if (document.getElementById("display")) {
       display.textContent = "内容を取得できませんでした。";
     });
 }
+
