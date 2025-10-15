@@ -4,7 +4,9 @@ const USER = "nonakagw";
 const REPO = "text-share";
 const FILE_PATH = "info.txt";
 
+// =========================
 // 管理ページ
+// =========================
 if (document.getElementById("saveBtn")) {
   const tokenInput = document.getElementById("token");
   const editor = document.getElementById("editor");
@@ -14,8 +16,13 @@ if (document.getElementById("saveBtn")) {
   fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`)
     .then(res => res.json())
     .then(data => {
+      if (!data.content) return;
       const content = atob(data.content);
       editor.value = content;
+    })
+    .catch(err => {
+      console.error("読み込み失敗:", err);
+      status.textContent = "内容の読み込みに失敗しました。";
     });
 
   // 保存ボタン処理
@@ -26,12 +33,15 @@ if (document.getElementById("saveBtn")) {
       return;
     }
 
+    // 現在のSHAを取得
     const getRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`);
     const fileData = await getRes.json();
 
+    // 新しい内容をBase64にエンコード
     const updatedContent = editor.value;
     const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)));
 
+    // PUTで更新
     const updateRes = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
       method: "PUT",
       headers: {
@@ -46,40 +56,43 @@ if (document.getElementById("saveBtn")) {
     });
 
     if (updateRes.ok) {
-      status.textContent = "GitHubに保存しました！";
+      status.textContent = "✅ GitHubに保存しました！";
     } else {
-      status.textContent = "エラーが発生しました。";
+      const errText = await updateRes.text();
+      console.error("更新失敗:", errText);
+      status.textContent = "⚠️ エラーが発生しました。";
     }
   });
 }
 
+// =========================
 // 閲覧ページ
+// =========================
 if (document.getElementById("display")) {
   const display = document.getElementById("display");
   const update = document.getElementById("update");
 
-fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`)
-  .then(res => res.json())
-  .then(data => {
-    const content = atob(data.content);
-    display.textContent = content;
+  // info.txtの内容を取得して表示
+  fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`)
+    .then(res => res.json())
+    .then(data => {
+      if (!data.content) throw new Error("no content");
+      const content = atob(data.content);
+      display.textContent = content;
 
-    // ここを修正：commitデータは別APIから取る
-    return fetch(`https://api.github.com/repos/${USER}/${REPO}/commits?path=${FILE_PATH}`);
-  })
-  .then(res => res.json())
-  .then(commits => {
-    if (commits.length > 0) {
-      update.textContent = "最終更新：" + new Date(commits[0].commit.committer.date).toLocaleString();
-    } else {
-      update.textContent = "最終更新情報なし";
-    }
-  })
-  .catch(err => {
-    console.error(err);
-    display.textContent = "内容を取得できませんでした。";
-  });
-
-
-
-
+      // コミット履歴を別APIで取得
+      return fetch(`https://api.github.com/repos/${USER}/${REPO}/commits?path=${FILE_PATH}`);
+    })
+    .then(res => res.json())
+    .then(commits => {
+      if (Array.isArray(commits) && commits.length > 0) {
+        update.textContent = "最終更新：" + new Date(commits[0].commit.committer.date).toLocaleString();
+      } else {
+        update.textContent = "最終更新情報なし";
+      }
+    })
+    .catch(err => {
+      console.error("読み込みエラー:", err);
+      display.textContent = "内容を取得できませんでした。";
+    });
+}
