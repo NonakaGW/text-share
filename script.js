@@ -1,7 +1,7 @@
 'use strict';
 
 // ======== GitHub設定 ========
-const USER = "あなたのGitHubユーザー名";  // 例: "nonakagw"
+const USER = "nonakagw";  // 例: "nonakagw"
 const REPO = "text-share";                 // リポジトリ名
 const FILE_PATH = "info.txt";              // ファイル名（ルート直下）
 
@@ -106,3 +106,4 @@ if (document.getElementById("display")) {
       display.textContent = "内容を取得できませんでした。";
     });
 }
+
