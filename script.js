@@ -1,6 +1,6 @@
 'use strict';
 
-const USER = "あなたのGitHubユーザー名";
+const USER = "NonakaGW";
 const REPO = "text-share";
 const FILE_PATH = "info.txt";
 
@@ -69,3 +69,4 @@ if (document.getElementById("display")) {
       display.textContent = "内容を取得できませんでした。";
     });
 }
+
