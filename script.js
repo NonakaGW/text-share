@@ -38,7 +38,7 @@ function decodeBase64Unicode(str) {
 async function deriveKeyFromPassphrase(passphrase, saltB64, iterations) {
   const enc = new TextEncoder();
   const passKey = await crypto.subtle.importKey(
-    'raw', enc.encode(passphrase), {name:'PBKDF2'}, false, ['deriveKey']
+    'raw', enc.encode(passphrase), { name: 'PBKDF2' }, false, ['deriveKey']
   );
   const salt = Uint8Array.from(atob(saltB64), c => c.charCodeAt(0));
   const derived = await crypto.subtle.deriveKey(
@@ -51,7 +51,7 @@ async function deriveKeyFromPassphrase(passphrase, saltB64, iterations) {
     passKey,
     { name: 'AES-GCM', length: 256 },
     false,
-    ['encrypt','decrypt']
+    ['encrypt', 'decrypt']
   );
   return derived;
 }
@@ -59,7 +59,7 @@ async function deriveKeyFromPassphrase(passphrase, saltB64, iterations) {
 // --- decrypt ciphertextWithTag (base64) with AES-GCM ---
 async function decryptToken(passphrase) {
   try {
-    const {ciphertext, iv, salt, kdfIterations} = ENC_DATA;
+    const { ciphertext, iv, salt, kdfIterations } = ENC_DATA;
     const key = await deriveKeyFromPassphrase(passphrase, salt, kdfIterations || 120000);
 
     const ctWithTag = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
@@ -151,23 +151,22 @@ if (document.getElementById('saveBtn')) {
   });
 }
 
-// ===== 閲覧ページ: 普通にGETで表示（非認証 or raw版へ切替可）=====
-if (document.getElementById('display')) {
-  const display = document.getElementById('display');
-  const update = document.getElementById('update');
+// ===== 閲覧ページ: 即時反映用 (GitHub API経由) =====
+if (document.getElementById("display")) {
+  const display = document.getElementById("display");
+  const update = document.getElementById("update");
 
-  // Option A: 速く簡単 → raw.githubusercontent.com を使って直接 text を取得（no API rate limit）
   (async () => {
     try {
-      const rawUrl = `https://raw.githubusercontent.com/${USER}/${REPO}/main/${FILE_PATH}?t=${Date.now()}`;
-      const r = await fetch(rawUrl);
-      if (!r.ok) throw new Error('raw fetch failed ' + r.status);
-      const txt = await r.text();
-      display.textContent = txt;
-      update.textContent = '';
+      const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}?t=${Date.now()}`);
+      if (!res.ok) throw new Error("API fetch failed: " + res.status);
+      const data = await res.json();
+      const content = decodeBase64Unicode(data.content);
+      display.textContent = content;
+      update.textContent = "最終取得：" + new Date().toLocaleString();
     } catch (err) {
       console.error(err);
-      display.textContent = '内容を取得できませんでした。';
+      display.textContent = "内容を取得できませんでした。";
     }
   })();
 }
