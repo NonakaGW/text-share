@@ -1,6 +1,6 @@
 'use strict';
 
-const USER = "NonakaGW";
+const USER = "nonakagw";
 const REPO = "text-share";
 const FILE_PATH = "info.txt";
 
@@ -69,4 +69,5 @@ if (document.getElementById("display")) {
       display.textContent = "内容を取得できませんでした。";
     });
 }
+
 
