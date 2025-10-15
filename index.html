@@ -2,23 +2,13 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>管理ページ</title>
+  <title>閲覧ページ</title>
   <link rel="stylesheet" href="style.css">
-  <script>
-    // ===== URLパスワードチェック =====
-    const VALID_KEY = "goodworks2025"; // パスワード（URLに入れるやつ）
-    const key = new URL(location.href).searchParams.get("key");
-    if (key !== VALID_KEY) {
-      document.write("<h2 style='color:red;text-align:center;margin-top:100px;'>アクセス拒否：正しいURLでアクセスしてください。</h2>");
-      throw new Error("Unauthorized access");
-    }
-  </script>
 </head>
 <body>
-  <h1>管理ページ</h1>
-  <textarea id="editor" rows="12" cols="60" placeholder="ここにテキストを入力..."></textarea>
-  <button id="saveBtn">GitHubに保存</button>
-  <p id="status"></p>
+  <h1>閲覧ページ</h1>
+  <div id="display"></div>
+  <p id="update"></p>
   <script src="script.js"></script>
 </body>
 </html>
