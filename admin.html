@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <title>管理ページ</title>
   <link rel="stylesheet" href="style.css">
   <script>
-    // url-keyチェック（必要なら）
-    const VALID_KEY = new URL(location.href).searchParams.get("key");
-    if (!VALID_KEY) {
-      document.body.innerHTML = "<h2 style='color:red;margin:60px auto;text-align:center;'>アクセス拒否：keyパラメータが必要です。</h2>";
-      throw new Error('no-key');
+    // --- URLパスワードチェック（admin専用）---
+    const key = new URL(location.href).searchParams.get("key");
+    const REQUIRED_KEY = "kabe_gw"; // ← 暗号化の時と同じパスワード
+    if (key !== REQUIRED_KEY) {
+      document.write("<h2 style='color:red;text-align:center;margin-top:100px;'>アクセス拒否：正しいURLでアクセスしてください。</h2>");
+      throw new Error("Unauthorized access");
     }
-    // VALID_KEY は復号に使うパスフレーズとしてそのまま使用します
   </script>
 </head>
 <body>
   <h1>管理ページ</h1>
-  <textarea id="editor" rows="12" cols="60"></textarea>
+  <textarea id="editor" rows="12" cols="60" placeholder="ここにテキストを入力..."></textarea>
   <button id="saveBtn">GitHubに保存</button>
   <p id="status"></p>
   <script src="script.js"></script>
