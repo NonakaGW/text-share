@@ -66,8 +66,10 @@ if (document.getElementById("display")) {
       update.textContent = "最終更新：" + new Date(data.commit.committer.date).toLocaleString();
     })
     .catch(err => {
+      console.error(err);
       display.textContent = "内容を取得できませんでした。";
     });
 }
+
 
 
