@@ -58,18 +58,28 @@ if (document.getElementById("display")) {
   const display = document.getElementById("display");
   const update = document.getElementById("update");
 
-  fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`)
-    .then(res => res.json())
-    .then(data => {
-      const content = atob(data.content);
-      display.textContent = content;
-      update.textContent = "最終更新：" + new Date(data.commit.committer.date).toLocaleString();
-    })
-    .catch(err => {
-      console.error(err);
-      display.textContent = "内容を取得できませんでした。";
-    });
-}
+fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`)
+  .then(res => res.json())
+  .then(data => {
+    const content = atob(data.content);
+    display.textContent = content;
+
+    // ここを修正：commitデータは別APIから取る
+    return fetch(`https://api.github.com/repos/${USER}/${REPO}/commits?path=${FILE_PATH}`);
+  })
+  .then(res => res.json())
+  .then(commits => {
+    if (commits.length > 0) {
+      update.textContent = "最終更新：" + new Date(commits[0].commit.committer.date).toLocaleString();
+    } else {
+      update.textContent = "最終更新情報なし";
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    display.textContent = "内容を取得できませんでした。";
+  });
+
 
 
 
