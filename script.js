@@ -16,9 +16,12 @@ if (document.getElementById("saveBtn")) {
   fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`)
     .then(res => res.json())
     .then(data => {
-      if (!data.content) return;
-      const content = atob(data.content);
-      editor.value = content;
+      if (data.content) {
+        const content = atob(data.content);
+        editor.value = content;
+      } else {
+        status.textContent = "ファイルが見つかりません。";
+      }
     })
     .catch(err => {
       console.error("読み込み失敗:", err);
